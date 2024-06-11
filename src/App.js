@@ -14,7 +14,7 @@ function App() {
             vision,
             {
                 baseOptions: {
-                    modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task",
+                    modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task",
                     delegate: "GPU"
                 },
                 runningMode: "VIDEO"
@@ -89,6 +89,9 @@ function App() {
         let end
         let totalTime
 
+        const radioButtons = document.querySelectorAll('input[type="radio"]');
+        let selectedExercise
+
         function toMouthUp(rMouth, lMouth, rIndex, lIndex){
             centerMouth = calcMidpoint(rMouth, lMouth)
             centerIndex = calcMidpoint(rIndex, lIndex)
@@ -112,7 +115,7 @@ function App() {
             if (toLeftSide){
                 document.getElementById("message").innerHTML = "Поднимите руки до левого уха";
                 console.log((calcDistance(lEar, rThumb)))
-                if ((calcDistance(lEar, rThumb) <= torsoDiameter * 0.1)){
+                if ((calcDistance(lEar, rThumb) <= torsoDiameter * 0.15)){
                     if (counter % 5 === 4)
                         toLeftSide = false
                     goLower = true
@@ -121,7 +124,7 @@ function App() {
             else{
                 document.getElementById("message").innerText = "Поднимите руки до правого уха";
                 console.log((calcDistance(rEar, lThumb)))
-                if ((calcDistance(rEar, lThumb) <= torsoDiameter * 0.1)){
+                if ((calcDistance(rEar, lThumb) <= torsoDiameter * 0.15)){
                     if (counter % 5 === 4 && counter > 0)
                         toLeftSide = true
                     goLower = true
@@ -146,13 +149,17 @@ function App() {
             canvasElement.style.width = "640px";
             video.style.width = "640px";
 
-            const radioButtons = document.querySelectorAll('input[type="radio"]');
-            let selectedExercise
             for (let i = 0; i < radioButtons.length; i++) {
                 if (radioButtons[i].checked) {
                     selectedExercise = radioButtons[i].value
                 }
             }
+            radioButtons.forEach(radioButton => {
+                radioButton.addEventListener('change', () => {
+                    counter = 0;
+                    document.getElementById("counter").innerHTML = "";
+                });
+            });
             let startTimeMs = performance.now();
             if (lastVideoTime !== video.currentTime) {
                 lastVideoTime = video.currentTime;
@@ -170,7 +177,7 @@ function App() {
                             } else {
                                 rShoulder = landmark[11]
                                 lShoulder = landmark[12]
-                                if (Math.abs(rShoulder.y - lShoulder.y) > torsoDiameter * 0.05){
+                                if (Math.abs(rShoulder.y - lShoulder.y) > torsoDiameter * 0.07){
                                     document.getElementById("message").innerHTML = "Старайтесь держать плечи ровно";
                                 }
                                 else{
